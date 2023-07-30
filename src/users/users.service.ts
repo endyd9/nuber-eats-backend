@@ -28,6 +28,7 @@ export class UsersService {
   }: CreateAccountInput): Promise<{ ok: boolean; error?: string }> {
     try {
       const exists = await this.users.findOne({ where: { email } });
+
       if (exists) {
         return { ok: false, error: '이미 가입된 이메일 입니다.' };
       }
@@ -39,7 +40,7 @@ export class UsersService {
           user,
         }),
       );
-      this.mailService.sendVerficationEmail(user.email, verification.code);
+      this.mailService.sendVerificationEmail(user.email, verification.code);
       return { ok: true };
     } catch (e) {
       return { ok: false, error: '계정 생성에 실패했습니다.' };
@@ -76,27 +77,25 @@ export class UsersService {
         token: token,
       };
     } catch (error) {
-      console.log(error);
       return {
         ok: false,
-        error,
+        error: '로그인에 실패 했습니다.',
       };
     }
   }
 
   async findById(id: number): Promise<UserProfileOutput> {
     try {
-      const user = await this.users.findOne({ where: { id } });
-      if (user) {
-        return {
-          ok: true,
-          user,
-        };
-      }
+      const user = await this.users.findOneOrFail({ where: { id } });
+
+      return {
+        ok: true,
+        user,
+      };
     } catch (error) {
       return {
         ok: false,
-        error,
+        error: '유저 정보를 찾을 수 없습니다.',
       };
     }
   }
@@ -114,18 +113,20 @@ export class UsersService {
         const verification = await this.verification.save(
           this.verification.create({ user }),
         );
-        this.mailService.sendVerficationEmail(user.email, verification.code);
+        this.mailService.sendVerificationEmail(user.email, verification.code);
       }
       if (password) {
         user.password = password;
       }
+
+      await this.users.save(user);
       return {
         ok: true,
       };
     } catch (error) {
       return {
         ok: false,
-        error,
+        error: '유저정보 수정에 실패 했습니다',
       };
     }
   }
@@ -144,7 +145,7 @@ export class UsersService {
       }
       return { ok: false, error: '인증번호를 다시 확인 해 주세요' };
     } catch (error) {
-      return { ok: false, error };
+      return { ok: false, error: '인증에 실패했습니다' };
     }
   }
 }
