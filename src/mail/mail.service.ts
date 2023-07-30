@@ -41,7 +41,7 @@ export class MailService {
   }
 
   sendVerificationEmail(email: string, code: string) {
-    this.sendEmail('누버이츠 인증 메일', '누버이츠 인증 메일', [
+    this.sendEmail('누버이츠 인증 메일', '누버이츠 메일 인증', [
       { key: 'username', value: email },
       { key: 'code', value: code },
     ]);
