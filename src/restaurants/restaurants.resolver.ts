@@ -33,7 +33,12 @@ import {
   SearchRestaurantInput,
   SearchRestaurantOutput,
 } from './dtos/search-restaurant.sto';
+import { Dish } from './entities/dish.entity';
+import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
+import { EditDishInput, EditDishOutput } from './dtos/edit-dish.dto';
+import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto';
 
+//레스토랑
 @Resolver((of) => Restaurant)
 export class RestaurantResolver {
   constructor(private readonly restaurantsService: RestaurantsService) {}
@@ -95,6 +100,7 @@ export class RestaurantResolver {
   }
 }
 
+//카테고리
 @Resolver((of) => Category)
 export class CategoryResolver {
   constructor(private readonly restaurantsService: RestaurantsService) {}
@@ -114,5 +120,37 @@ export class CategoryResolver {
     @Args('input') categoryInput: CategoryInput,
   ): Promise<CategoryOutput> {
     return this.restaurantsService.findCategoryBySlug(categoryInput);
+  }
+}
+
+//메뉴
+@Resolver((of) => Dish)
+export class DishResolver {
+  constructor(private readonly restaurantsService: RestaurantsService) {}
+
+  @Mutation((type) => CreateDishOutput)
+  @Role(['Owner'])
+  createDish(
+    @AuthUser() owner: User,
+    @Args('input') createDishInput: CreateDishInput,
+  ): Promise<CreateDishOutput> {
+    return this.restaurantsService.createDish(owner, createDishInput);
+  }
+  @Mutation((type) => EditDishOutput)
+  @Role(['Owner'])
+  editDish(
+    @AuthUser() owner: User,
+    @Args('input') editDishInput: EditDishInput,
+  ): Promise<EditDishOutput> {
+    return this.restaurantsService.editDish(owner, editDishInput);
+  }
+
+  @Mutation((type) => DeleteDishOutput)
+  @Role(['Owner'])
+  deleteDish(
+    @AuthUser() owner: User,
+    @Args('input') deleteDishInput: DeleteDishInput,
+  ): Promise<DeleteDishOutput> {
+    return this.restaurantsService.deleteDish(owner, deleteDishInput);
   }
 }
