@@ -45,9 +45,16 @@ import { OrderItem } from './orders/entities/oreder-item.entity';
     }),
     GraphQLModule.forRoot({
       driver: ApolloDriver,
+      subscriptions: {
+        'subscriptions-transport-ws': {
+          onConnect: (connectionParams: any) => ({
+            token: connectionParams['x-jwt'],
+          }),
+        },
+      },
       // autoSchemaFile: join(process.cwd(), `src/schema.gql`),
       autoSchemaFile: true,
-      context: ({ req }) => ({ user: req['user'] }),
+      context: ({ req }) => ({ token: req.headers['x-jwt'] }),
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -86,11 +93,4 @@ import { OrderItem } from './orders/entities/oreder-item.entity';
   controllers: [],
   providers: [],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtMiddleware).forRoutes({
-      path: '/graphql',
-      method: RequestMethod.POST,
-    });
-  }
-}
+export class AppModule {}

@@ -213,8 +213,9 @@ export class OrderService {
     try {
       const order = await this.orders.findOne({
         where: { id: orderId },
-        relations: [''],
+        relations: ['restaurant'],
       });
+
       if (!order) {
         return {
           ok: false,
@@ -260,6 +261,7 @@ export class OrderService {
     } catch (error) {
       return {
         ok: false,
+        error: '주문 상태 변경에 실패 했습니다.',
       };
     }
   }
