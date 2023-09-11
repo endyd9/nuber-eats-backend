@@ -29,6 +29,10 @@ import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 import { Dish } from './entities/dish.entity';
 import { EditDishInput, EditDishOutput } from './dtos/edit-dish.dto';
 import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto';
+import {
+  MyRestaurantsInput,
+  MyRestaurantsOutput,
+} from './dtos/my-restaurants.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -195,6 +199,7 @@ export class RestaurantsService {
         category,
         restaruants,
         totalPages: Math.ceil(totalResult / 25),
+        totalResult,
       };
     } catch (error) {
       return {
@@ -207,8 +212,8 @@ export class RestaurantsService {
   async allRestaurants({ page }: RestaurantsInput): Promise<RestaurantsOutput> {
     try {
       const [restaurants, totalResult] = await this.restaurants.findAndCount({
-        skip: (page - 1) * 25,
-        take: 25,
+        skip: (page - 1) * 3,
+        take: 3,
         order: {
           isPromoted: 'DESC',
         },
@@ -216,13 +221,46 @@ export class RestaurantsService {
       return {
         ok: true,
         results: restaurants,
-        totalPages: Math.ceil(totalResult / 25),
+        totalPages: Math.ceil(totalResult / 3),
         totalResult,
       };
     } catch {
       return {
         ok: false,
         error: '매장 목록을 불러오지 못했습니다.',
+      };
+    }
+  }
+
+  async myRestaurants(
+    { id }: User,
+    { page }: MyRestaurantsInput,
+  ): Promise<MyRestaurantsOutput> {
+    try {
+      const [results, totalResult] = await this.restaurants.findAndCount({
+        where: {
+          owner: {
+            id,
+          },
+        },
+      });
+
+      if (!results) {
+        throw new Error();
+      }
+
+      return {
+        ok: true,
+        results,
+        totalPages: Math.ceil(totalResult / 3),
+        totalResult,
+      };
+    } catch (error) {
+      console.log(error);
+
+      return {
+        ok: false,
+        error: '매장 정보를 찾을 수 없습니다.',
       };
     }
   }
