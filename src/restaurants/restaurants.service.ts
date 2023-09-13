@@ -33,6 +33,10 @@ import {
   MyRestaurantsInput,
   MyRestaurantsOutput,
 } from './dtos/my-restaurants.dto';
+import {
+  MyRestaurantInput,
+  MyRestaurantOutPut,
+} from './dtos/my-restaurant.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -58,8 +62,10 @@ export class RestaurantsService {
       await this.restaurants.save(newRestaurant);
       return {
         ok: true,
+        restaurantId: newRestaurant.id,
       };
-    } catch {
+    } catch (error) {
+      console.log(error);
       return {
         ok: false,
         error: '매장 생성에 실패했습니다.',
@@ -243,6 +249,8 @@ export class RestaurantsService {
             id,
           },
         },
+        take: 6,
+        skip: (page - 1) * 6,
       });
 
       if (!results) {
@@ -252,7 +260,7 @@ export class RestaurantsService {
       return {
         ok: true,
         results,
-        totalPages: Math.ceil(totalResult / 3),
+        totalPages: Math.ceil(totalResult / 6),
         totalResult,
       };
     } catch (error) {
@@ -261,6 +269,36 @@ export class RestaurantsService {
       return {
         ok: false,
         error: '매장 정보를 찾을 수 없습니다.',
+      };
+    }
+  }
+
+  async myRestaurant(
+    owner: User,
+    { id }: MyRestaurantInput,
+  ): Promise<MyRestaurantOutPut> {
+    try {
+      const restaurant = await this.restaurants.findOne({
+        where: {
+          owner: {
+            id: owner.id,
+          },
+          id,
+        },
+        relations: ['menu'],
+      });
+
+      if (!restaurant) {
+        throw new Error();
+      }
+      return {
+        ok: true,
+        restaurant,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: '매장 정보를 불러오지 못 했습니다.',
       };
     }
   }
