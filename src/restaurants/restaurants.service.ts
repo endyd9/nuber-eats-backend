@@ -285,7 +285,7 @@ export class RestaurantsService {
           },
           id,
         },
-        relations: ['menu'],
+        relations: ['menu', 'orders'],
       });
 
       if (!restaurant) {
