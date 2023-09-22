@@ -46,6 +46,7 @@ import { UploadsModule } from './uploads/uploads.module';
       }),
     }),
     GraphQLModule.forRoot({
+      playground: process.env.NODEENV !== 'prod',
       driver: ApolloDriver,
       subscriptions: {
         'subscriptions-transport-ws': {
